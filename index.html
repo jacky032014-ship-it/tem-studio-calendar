@@ -168,7 +168,20 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+.booking.plan-a {
+  background: #dbeafe;
+  color: #1e40af;
+}
 
+.booking.plan-b {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.booking.plan-c {
+  background: #fef3c7;
+  color: #92400e;
+}
     .loading,
     .error,
     .no-events {
@@ -414,15 +427,20 @@
         html += `<div class="date-number">${day}</div>`;
 
         dayEvents.forEach(function(event) {
-          const publicTitle = event.title || '已預約';
+  const title = event.title || '已預約';
 
-const text = event.allDay
-  ? event.title
-  : `${formatTime(event.start)} ${event.title}`;
+  const text = event.allDay
+    ? title
+    : `${formatTime(event.start)} ${title}`;
 
-          html += `<div class="booking">${escapeHtml(text)}</div>`;
-        });
+  const planClass = getPlanClass(title);
 
+  html += `
+    <div class="booking ${planClass}">
+      ${escapeHtml(text)}
+    </div>
+  `;
+});
         html += '</div>';
       }
 
@@ -460,3 +478,22 @@ const text = event.allDay
   </script>
 </body>
 </html>
+function getPlanClass(title) {
+  const normalizedTitle = String(title || '')
+    .replace(/\s+/g, '')
+    .toUpperCase();
+
+  if (normalizedTitle.includes('｜A')) {
+    return 'plan-a';
+  }
+
+  if (normalizedTitle.includes('｜B')) {
+    return 'plan-b';
+  }
+
+  if (normalizedTitle.includes('｜C')) {
+    return 'plan-c';
+  }
+
+  return '';
+}
