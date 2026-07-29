@@ -417,8 +417,8 @@
           const publicTitle = event.title || '已預約';
 
 const text = event.allDay
-  ? publicTitle
-  : `${formatTime(event.start)} ${publicTitle}`;
+  ? event.title
+  : `${formatTime(event.start)} ${event.title}`;
 
           html += `<div class="booking">${escapeHtml(text)}</div>`;
         });
