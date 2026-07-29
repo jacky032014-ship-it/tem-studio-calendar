@@ -254,7 +254,7 @@
       <h1>TEM-Studio 近期預約檔期</h1>
 
       <p>
-        日曆中顯示「已預約」的時段，代表該時段已有行程。
+        日曆中顯示已預約時段與方案，方便查看近期檔期。
       </p>
     </header>
 
@@ -297,7 +297,7 @@
     </section>
 
     <p class="privacy-note">
-      為保護客戶隱私，本頁不顯示客戶姓名、方案、負責人或付款資訊。
+      為保護客戶隱私，本頁僅顯示姓氏首字、方案與預約時間，不顯示完整姓名、負責人或付款資訊。
     </p>
   </main>
 
@@ -473,27 +473,27 @@
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
     }
+    function getPlanClass(title) {
+      const normalizedTitle = String(title || '')
+        .replace(/\s+/g, '')
+        .toUpperCase();
+
+      if (normalizedTitle.includes('｜A')) {
+        return 'plan-a';
+      }
+
+      if (normalizedTitle.includes('｜B')) {
+        return 'plan-b';
+      }
+
+      if (normalizedTitle.includes('｜C')) {
+        return 'plan-c';
+      }
+
+      return '';
+    }
 
     loadCalendar();
   </script>
 </body>
 </html>
-function getPlanClass(title) {
-  const normalizedTitle = String(title || '')
-    .replace(/\s+/g, '')
-    .toUpperCase();
-
-  if (normalizedTitle.includes('｜A')) {
-    return 'plan-a';
-  }
-
-  if (normalizedTitle.includes('｜B')) {
-    return 'plan-b';
-  }
-
-  if (normalizedTitle.includes('｜C')) {
-    return 'plan-c';
-  }
-
-  return '';
-}
