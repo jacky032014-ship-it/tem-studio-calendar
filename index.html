@@ -414,9 +414,11 @@
         html += `<div class="date-number">${day}</div>`;
 
         dayEvents.forEach(function(event) {
-          const text = event.allDay
-            ? '已預約'
-            : `${formatTime(event.start)} 已預約`;
+          const publicTitle = event.title || '已預約';
+
+const text = event.allDay
+  ? publicTitle
+  : `${formatTime(event.start)} ${publicTitle}`;
 
           html += `<div class="booking">${escapeHtml(text)}</div>`;
         });
