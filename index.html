@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1"
+  >
+
+  <meta name="theme-color" content="#ffffff">
+
+  <title>TEM-Studio 近期預約檔期</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background: #f4f5f7;
+      color: #202124;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "PingFang TC",
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 800px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 24px 14px 44px;
+    }
+
+    .header {
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0 0 9px;
+      font-size: 26px;
+      font-weight: 750;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      margin: 0;
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .calendar-card {
+      overflow: hidden;
+      border: 1px solid #e3e6ea;
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.07);
+    }
+
+    .calendar-toolbar {
+      display: grid;
+      grid-template-columns: 48px 1fr 48px;
+      align-items: center;
+      padding: 14px 12px;
+      border-bottom: 1px solid #eaecf0;
+    }
+
+    .month-title {
+      text-align: center;
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .nav-button {
+      display: flex;
+      width: 40px;
+      height: 40px;
+      margin: auto;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 50%;
+      background: #f1f3f4;
+      color: #202124;
+      font-size: 25px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-button:active {
+      transform: scale(0.93);
+    }
+
+    .weekdays,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .weekday {
+      padding: 12px 2px;
+      color: #667085;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .day {
+      position: relative;
+      min-height: 88px;
+      padding: 7px 5px;
+      overflow: hidden;
+      border-top: 1px solid #edf0f2;
+      border-right: 1px solid #edf0f2;
+      background: #ffffff;
+    }
+
+    .day:nth-child(7n) {
+      border-right: 0;
+    }
+
+    .day.empty {
+      background: #fafafa;
+    }
+
+    .date-number {
+      display: flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 13px;
+    }
+
+    .today .date-number {
+      background: #202124;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .booking {
+      margin-top: 5px;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #e7e9ec;
+      padding: 4px 5px;
+      color: #35383d;
+      font-size: 10px;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .loading,
+    .error,
+    .no-events {
+      padding: 34px 18px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .loading,
+    .no-events {
+      color: #667085;
+    }
+
+    .error {
+      color: #b42318;
+    }
+
+    .privacy-note {
+      margin: 15px 6px 0;
+      color: #667085;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        padding: 17px 7px 32px;
+      }
+
+      .header h1 {
+        font-size: 23px;
+      }
+
+      .calendar-card {
+        border-radius: 15px;
+      }
+
+      .calendar-toolbar {
+        padding: 11px 7px;
+      }
+
+      .month-title {
+        font-size: 17px;
+      }
+
+      .day {
+        min-height: 72px;
+        padding: 5px 3px;
+      }
+
+      .date-number {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+      }
+
+      .booking {
+        padding: 3px;
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>TEM-Studio 近期預約檔期</h1>
+
+      <p>
+        日曆中顯示「已預約」的時段，代表該時段已有行程。
+      </p>
+    </header>
+
+    <section class="calendar-card">
+      <div class="calendar-toolbar">
+        <button
+          class="nav-button"
+          type="button"
+          aria-label="上一個月"
+          onclick="changeMonth(-1)"
+        >
+          ‹
+        </button>
+
+        <div id="monthTitle" class="month-title"></div>
+
+        <button
+          class="nav-button"
+          type="button"
+          aria-label="下一個月"
+          onclick="changeMonth(1)"
+        >
+          ›
+        </button>
+      </div>
+
+      <div class="weekdays">
+        <div class="weekday">日</div>
+        <div class="weekday">一</div>
+        <div class="weekday">二</div>
+        <div class="weekday">三</div>
+        <div class="weekday">四</div>
+        <div class="weekday">五</div>
+        <div class="weekday">六</div>
+      </div>
+
+      <div id="calendar">
+        <div class="loading">正在讀取檔期……</div>
+      </div>
+    </section>
+
+    <p class="privacy-note">
+      為保護客戶隱私，本頁不顯示客戶姓名、方案、負責人或付款資訊。
+    </p>
+  </main>
+
+  <script>
+    const API_URL =
+      'https://script.google.com/macros/s/AKfycbxSR2M5FbvFo4oyJfI_-MG5DRXVsKiWBf3hTyDM9Z-5NFX_U_8sZi47dzp5CRZKg62vnw/exec';
+
+    let displayedDate = new Date();
+    displayedDate.setDate(1);
+
+    let requestCounter = 0;
+
+    function changeMonth(amount) {
+      displayedDate.setMonth(displayedDate.getMonth() + amount);
+      loadCalendar();
+    }
+
+    function loadCalendar() {
+      const year = displayedDate.getFullYear();
+      const month = displayedDate.getMonth() + 1;
+      const requestId = ++requestCounter;
+      const callbackName = `calendarCallback${requestId}`;
+
+      document.getElementById('monthTitle').textContent =
+        `${year} 年 ${month} 月`;
+
+      document.getElementById('calendar').innerHTML =
+        '<div class="loading">正在讀取檔期……</div>';
+
+      const oldScripts = document.querySelectorAll(
+        'script[data-calendar-api]'
+      );
+
+      oldScripts.forEach(function(script) {
+        script.remove();
+      });
+
+      const timeoutId = window.setTimeout(function() {
+        delete window[callbackName];
+
+        document.getElementById('calendar').innerHTML =
+          '<div class="error">日曆暫時無法載入，請稍後重新整理。</div>';
+      }, 12000);
+
+      window[callbackName] = function(response) {
+        window.clearTimeout(timeoutId);
+        delete window[callbackName];
+
+        if (!response || response.success !== true) {
+          const message =
+            response && response.message
+              ? escapeHtml(response.message)
+              : '未知錯誤';
+
+          document.getElementById('calendar').innerHTML =
+            `<div class="error">日曆無法載入：${message}</div>`;
+
+          return;
+        }
+
+        renderCalendar(year, month, response.events || []);
+      };
+
+      const script = document.createElement('script');
+
+      script.dataset.calendarApi = 'true';
+
+      script.src =
+        `${API_URL}` +
+        `?year=${encodeURIComponent(year)}` +
+        `&month=${encodeURIComponent(month)}` +
+        `&callback=${encodeURIComponent(callbackName)}` +
+        `&cache=${Date.now()}`;
+
+      script.onerror = function() {
+        window.clearTimeout(timeoutId);
+        delete window[callbackName];
+
+        document.getElementById('calendar').innerHTML =
+          '<div class="error">無法連線至日曆，請稍後再試。</div>';
+      };
+
+      document.body.appendChild(script);
+    }
+
+    function renderCalendar(year, month, events) {
+      const firstDay = new Date(year, month - 1, 1);
+      const numberOfDays = new Date(year, month, 0).getDate();
+      const startingWeekday = firstDay.getDay();
+      const eventsByDate = {};
+
+      events.forEach(function(event) {
+        if (!event.start) {
+          return;
+        }
+
+        const dateKey = event.start.substring(0, 10);
+
+        if (!eventsByDate[dateKey]) {
+          eventsByDate[dateKey] = [];
+        }
+
+        eventsByDate[dateKey].push(event);
+      });
+
+      Object.keys(eventsByDate).forEach(function(dateKey) {
+        eventsByDate[dateKey].sort(function(a, b) {
+          return String(a.start).localeCompare(String(b.start));
+        });
+      });
+
+      let html = '<div class="calendar-grid">';
+
+      for (let i = 0; i < startingWeekday; i++) {
+        html += '<div class="day empty"></div>';
+      }
+
+      const todayKey = formatLocalDate(new Date());
+
+      for (let day = 1; day <= numberOfDays; day++) {
+        const currentDate = new Date(year, month - 1, day);
+        const dateKey = formatLocalDate(currentDate);
+        const dayEvents = eventsByDate[dateKey] || [];
+        const isToday = dateKey === todayKey;
+
+        html += `<div class="day ${isToday ? 'today' : ''}">`;
+        html += `<div class="date-number">${day}</div>`;
+
+        dayEvents.forEach(function(event) {
+          const text = event.allDay
+            ? '已預約'
+            : `${formatTime(event.start)} 已預約`;
+
+          html += `<div class="booking">${escapeHtml(text)}</div>`;
+        });
+
+        html += '</div>';
+      }
+
+      html += '</div>';
+
+      document.getElementById('calendar').innerHTML = html;
+    }
+
+    function formatLocalDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatTime(dateString) {
+      if (!dateString || dateString.length < 16) {
+        return '';
+      }
+
+      return dateString.substring(11, 16);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    loadCalendar();
+  </script>
+</body>
+</html>
